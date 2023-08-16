@@ -1,7 +1,4 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
-
 import 'internalClass.dart';
 
 class CardSample2 extends StatelessWidget {
@@ -46,12 +43,12 @@ class CardSample2 extends StatelessWidget {
                             style: MyTextSample.display1(context)!.copyWith(
                                 color: const Color.fromARGB(255, 0, 0, 0))),
                         Expanded(
-                          flex: 1,
+                          flex: 0,
                           child: Image.asset(
-                            ImgSample.get("soil-moisture.svg"),
+                            ImgSample.get("soli.png"),
                             height: 80,
                             width: 80,
-                            fit: BoxFit.cover,
+                            // fit: BoxFit.cover,
                           ),
                         ),
                       ],
@@ -86,6 +83,6 @@ class CardSample2 extends StatelessWidget {
   }
 
   Widget CardWidget() {
-    return Card();
+    return const Card();
   }
 }
