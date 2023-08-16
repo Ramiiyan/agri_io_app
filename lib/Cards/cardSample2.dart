@@ -37,20 +37,26 @@ class CardSample2 extends StatelessWidget {
                     ),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Text("100 %",
                             style: MyTextSample.display1(context)!.copyWith(
                                 color: const Color.fromARGB(255, 0, 0, 0))),
-                        Expanded(
-                          flex: 0,
-                          child: Image.asset(
-                            ImgSample.get("soli.png"),
-                            height: 80,
-                            width: 80,
-                            // fit: BoxFit.cover,
-                          ),
+                        Image.asset(
+                          ImgSample.get("moisture.png"),
+                          height: 80,
+                          width: 80,
+                          // fit: BoxFit.cover,
                         ),
+                        // Expanded(
+                        //   flex: 1,
+                        //   child: Image.asset(
+                        //     ImgSample.get("moisture.png"),
+                        //     height: 80,
+                        //     width: 80,
+                        //     // fit: BoxFit.cover,
+                        //   ),
+                        // ),
                       ],
                     ),
 
@@ -71,6 +77,53 @@ class CardSample2 extends StatelessWidget {
                     //   fit: BoxFit.cover,
                     // ),
                   ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(4),
+          ),
+          // color: const Color.fromARGB(255, 255, 255, 255),
+          clipBehavior: Clip.antiAliasWithSaveLayer,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  Container(
+                    width: 15,
+                  ),
+                  // const Text(
+                  //   "Call",
+                  //   style: TextStyle(color: Colors.white),
+                  // ),
+                  Container(
+                    alignment: Alignment.topLeft,
+                    child: Text("Sensor Name",
+                        style: MyTextSample.title(context)!
+                            .copyWith(color: MyColorsSample.grey_80)),
+                  ),
+                  const Spacer(),
+                  Image.asset(
+                    ImgSample.get("moisture.png"),
+                    height: 40,
+                    width: 40,
+                    // fit: BoxFit.cover,
+                  ),
+                  Container(
+                    width: 4,
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.all(15),
+                child: const Text(
+                  "John Smith \nTek",
+                  style: TextStyle(
+                      fontSize: 24, color: Color.fromARGB(255, 0, 0, 0)),
                 ),
               ),
             ],

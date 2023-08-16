@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'Cards/cardSample2.dart';
+import 'Cards/MySampleCard.dart';
 
 void main() => runApp(const MyApp());
 
@@ -15,7 +16,7 @@ class MyApp extends StatelessWidget {
         appBar: AppBar(
           title: const Text('Agri_IO'),
         ),
-        body: const CardSample2(),
+        body: const MySampleCard(),
         //backgroundColor: Colors.black,
       ),
     );
