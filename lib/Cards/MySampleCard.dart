@@ -10,7 +10,7 @@ class MySampleCard extends StatelessWidget {
     return GridView.count(
       crossAxisCount: 2,
       children: List.generate(10, (index) {
-        return myCard(context, "Sensor_01", "Soil Moisture", 100);
+        return myCard(context, "Sensor_$index", "Soil Moisture", 100);
       }),
     );
   }
