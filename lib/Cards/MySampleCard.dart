@@ -19,14 +19,23 @@ class MySampleCard extends StatelessWidget {
       int sensorValue) {
     return Card(
         child: Column(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      mainAxisAlignment: MainAxisAlignment.start,
       children: <Widget>[
+        Container(
+          height: 10,
+        ),
         Text(sensorName,
             style: MyTextSample.title(context)!
                 .copyWith(color: MyColorsSample.grey_80)),
+        Container(
+          height: 10,
+        ),
         Text(sensorType),
+        Container(
+          height: 30,
+        ),
         Text("$sensorValue %",
-            style: MyTextSample.display1(context)!
+            style: MyTextSample.display2(context)!
                 .copyWith(color: const Color.fromARGB(255, 0, 0, 0))),
       ],
     ));
