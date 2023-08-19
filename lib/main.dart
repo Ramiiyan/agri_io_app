@@ -14,13 +14,16 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Agri_IO'),
+        title: const Text('Agri.IO'),
       ),
       body: const MySampleCard(),
       floatingActionButton: FloatingActionButton(
           heroTag: 'SensorTag',
-          backgroundColor: Color.fromARGB(0, 255, 255, 255),
-          child: Image.asset(ImgSample.get("add_sensor.png")),
+          // backgroundColor: Color.fromARGB(0, 255, 255, 255),
+          child: const Icon(
+            Icons.add_circle,
+            size: 55,
+          ),
           onPressed: () {
             Navigator.push(
                 context,
