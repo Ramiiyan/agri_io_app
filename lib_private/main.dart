@@ -19,16 +19,15 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     return MaterialApp(
-      title: 'SmartSocket',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        textTheme:GoogleFonts.latoTextTheme(textTheme).copyWith(
-          bodyText1: GoogleFonts.montserrat(textStyle: textTheme.bodyText1),
+        title: 'SmartSocket',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+          textTheme: GoogleFonts.latoTextTheme(textTheme).copyWith(
+            bodyText1: GoogleFonts.montserrat(textStyle: textTheme.bodyText1),
+          ),
         ),
-      ),
-      debugShowCheckedModeBanner: false,
-      initialRoute: '/',
-      routes: Routes.cutomRoutes
-    );
+        debugShowCheckedModeBanner: false,
+        initialRoute: '/',
+        routes: Routes.cutomRoutes);
   }
 }
