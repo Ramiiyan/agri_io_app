@@ -7,17 +7,17 @@ class AddSensor extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Agri.IO'),
+        title: const Text('Add New Sensor'),
       ),
       body: Text("TODO: Add Sensor Form"),
       floatingActionButton: FloatingActionButton.extended(
-          label: Row(children: [Icon(Icons.create), Text('Create')]),
+          label: const Row(children: [Icon(Icons.create), Text('Create')]),
           onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const AddSensor(),
-                ));
+            // Navigator.push(
+            //     context,
+            //     MaterialPageRoute(
+            //       builder: (context) => const AddSensor(),
+            //     ));
           }),
     );
   }
