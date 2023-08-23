@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../routes/Routes.dart';
 import 'internalClass.dart';
 
 class SensorViewPage extends StatelessWidget {
@@ -47,6 +48,16 @@ class SensorViewPage extends StatelessWidget {
         title: const Text('Agri.IO'),
       ),
       body: sensorGridView2(context),
+      floatingActionButton: FloatingActionButton(
+          heroTag: 'SensorTag',
+          // backgroundColor: Color.fromARGB(0, 255, 255, 255),
+          child: const Icon(
+            Icons.add_circle,
+            size: 55,
+          ),
+          onPressed: () {
+            Navigator.of(context).pushNamed(Routes.addSensor);
+          }),
     );
   }
 

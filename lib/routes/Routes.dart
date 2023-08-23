@@ -38,7 +38,7 @@ class Routes {
     // home : (BuildContext context) => HomePage(),
     sensorView: (context) => SensorViewPage(),
     // addDevice : (BuildContext context) => AddDevicePage(),
-    addSensor: (context) => const AddSensor(),
+    addSensor: (context) => AddSensor(),
     // shareDevice : (BuildContext context) => ShareDevicePage(),
     // sharePermission : (BuildContext context) => SharePermissionPage(),
   };
