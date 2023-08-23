@@ -1,8 +1,6 @@
 import 'package:agri_io_app/routes/Routes.dart';
 import 'package:flutter/material.dart';
 
-import 'BaseComponents/AppWidgets.dart';
-
 class AddSensor extends StatefulWidget {
   AddSensor({Key? key}) : super(key: key);
 
