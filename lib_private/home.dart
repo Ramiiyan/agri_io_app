@@ -21,7 +21,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  var _data = [
+  final _data = [
     {
       "name": "Test Device 1",
       "serial_number": "0000000001",

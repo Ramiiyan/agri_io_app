@@ -73,11 +73,8 @@ class AppWidgets {
     );
   }
 
-  Widget entryField(GlobalKey<FormState> formKey, String title,
-      {bool isPassword = false}) {
-    //final formKey = formKey;
+  Widget entryField(String title, {bool isPassword = false}) {
     return Container(
-      key: formKey,
       margin: const EdgeInsets.symmetric(vertical: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -97,6 +94,7 @@ class AppWidgets {
                 }
                 return null;
               },
+              autovalidateMode: AutovalidateMode.onUserInteraction,
               decoration: const InputDecoration(
                   border: InputBorder.none,
                   fillColor: Color(0xfff3f3f4),

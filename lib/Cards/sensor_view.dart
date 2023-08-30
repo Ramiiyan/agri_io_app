@@ -1,11 +1,19 @@
+import 'package:agri_io_app/Models/sensor_model.dart';
+import 'package:agri_io_app/Services/HttpService.dart';
 import 'package:flutter/material.dart';
 
 import '../routes/Routes.dart';
 import 'internalClass.dart';
 
-class SensorViewPage extends StatelessWidget {
+class SensorViewPage extends StatefulWidget {
   SensorViewPage({super.key});
+  @override
+  SensorViewPageState createState() => SensorViewPageState();
+}
 
+class SensorViewPageState extends State<SensorViewPage> {
+  final HttpService httpService = HttpService();
+  List<Sensor>? sensorList;
   final sampleData = [
     {
       "sensorName": "Sensor_01",
@@ -47,7 +55,9 @@ class SensorViewPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Agri.IO'),
       ),
-      body: sensorGridView2(context),
+      body: RefreshIndicator(
+          onRefresh: () => refreshSensors(context),
+          child: sensorGridView2(context)),
       floatingActionButton: FloatingActionButton(
           heroTag: 'SensorTag',
           // backgroundColor: Color.fromARGB(0, 255, 255, 255),
@@ -61,16 +71,40 @@ class SensorViewPage extends StatelessWidget {
     );
   }
 
-  Widget sensorGridView(BuildContext context) {
-    return GridView.count(
-      crossAxisCount: 2,
-      children: List.generate(10, (index) {
-        return sensorCard(context, "Sensor_$index", "Soil Moisture", 100);
-      }),
-    );
+  Future<void> refreshSensors(BuildContext context) async {
+    final sensors = await httpService.fetchSensors();
+    setState(() {
+      sensorList = sensors;
+    });
   }
 
   Widget sensorGridView2(BuildContext context) {
+    return FutureBuilder(
+        future: httpService.fetchSensors(),
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          if (snapshot.hasData) {
+            List<Sensor>? sensors = snapshot.data;
+            return GridView.builder(
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 200,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                ),
+                itemCount: sensors!.length,
+                itemBuilder: ((context, index) {
+                  return sensorCard(
+                      context: context,
+                      sensorName: sensors[index].sensorName,
+                      sensorType: sensors[index].type,
+                      sensorValue: 100); //Random Value Assigned.
+                }));
+          } else {
+            return const Center(child: CircularProgressIndicator());
+          }
+        });
+  }
+
+  Widget sensorGridView(BuildContext context) {
     return GridView.builder(
         gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
           maxCrossAxisExtent: 200,
@@ -80,13 +114,19 @@ class SensorViewPage extends StatelessWidget {
         itemCount: sampleData.length,
         itemBuilder: ((context, index) {
           var item = sampleData[index];
-          return sensorCard(context, item['sensorName'].toString(),
-              item['sensorType'].toString(), item['sensorValue'] as int);
+          return sensorCard(
+              context: context,
+              sensorName: item['sensorName'].toString(),
+              sensorType: item['sensorType'].toString(),
+              sensorValue: item['sensorValue'] as int);
         }));
   }
 
-  Widget sensorCard(BuildContext context, String sensorName, String sensorType,
-      int sensorValue) {
+  Widget sensorCard(
+      {required BuildContext context,
+      required String sensorName,
+      required String sensorType,
+      int? sensorValue}) {
     return Card(
         child: Column(
       mainAxisAlignment: MainAxisAlignment.start,

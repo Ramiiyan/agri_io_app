@@ -1,5 +1,7 @@
+import 'package:agri_io_app/BaseComponents/AppWidgets.dart';
 import 'package:agri_io_app/routes/Routes.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AddSensor extends StatefulWidget {
   AddSensor({Key? key}) : super(key: key);
@@ -11,8 +13,7 @@ class AddSensor extends StatefulWidget {
 }
 
 class AddSensorState extends State<AddSensor> {
-  final _controller = TextEditingController();
-  var _text = '';
+  final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -28,54 +29,39 @@ class AddSensorState extends State<AddSensor> {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
-                      const SizedBox(height: 10),
-                      const SizedBox(height: 50),
-                      //AppWidgets(context).entryField(formKey, 'Name :'),
-                      TextField(
-                          controller: _controller,
-                          obscureText: false,
-                          decoration: InputDecoration(
-                            labelText: 'Name :',
-                            errorText: textValidation(),
-                          ),
-                          onChanged: (text) => setState(() => _text)),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 20),
+                      Text(
+                        'Enter Your Sensor Details',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.notoSans(
+                          textStyle: Theme.of(context).textTheme.displayMedium,
+                          fontSize: 20,
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+                      Form(
+                          key: _formKey,
+                          child: Column(children: <Widget>[
+                            AppWidgets(context).entryField("Sensor Name"),
+                            AppWidgets(context).entryField("Sensor Type")
+                          ])),
                     ]),
               ),
             ],
           )),
       floatingActionButton: FloatingActionButton.extended(
         label: const Row(children: [Icon(Icons.create), Text('Create')]),
-        onPressed: _controller.value.text.isNotEmpty ? submit : null,
+        onPressed: submit,
       ),
     );
   }
 
   void submit() {
-    Navigator.of(context).pushNamedAndRemoveUntil(
-        Routes.sensorView, ModalRoute.withName(Routes.sensorView));
-  }
-
-  String? textValidation() {
-    // at any time, we can get the text from _controller.value.text
-    final text = _controller.value.text;
-    // Note: you can do your own custom validation here
-    // Move this logic this outside the widget for more testable code
-    if (text.isEmpty) {
-      return 'Can\'t be empty';
+    if (_formKey.currentState!.validate()) {
+      Navigator.of(context)
+          .pushNamedAndRemoveUntil(Routes.sensorView, (route) => false);
     }
-    if (text.length < 4) {
-      return 'Too short';
-    }
-    // return null if the text is valid
-    return null;
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
   }
 }
