@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../Models/sensor_model.dart';
+
 class AppWidgets {
   BuildContext context;
   // AppWidgets(BuildContext context) {
@@ -88,6 +90,7 @@ class AppWidgets {
           ),
           TextFormField(
               obscureText: isPassword,
+              onSaved: (value) {},
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Please enter some text';

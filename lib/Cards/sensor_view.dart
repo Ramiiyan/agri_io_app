@@ -94,9 +94,9 @@ class SensorViewPageState extends State<SensorViewPage> {
                 itemBuilder: ((context, index) {
                   return sensorCard(
                       context: context,
-                      sensorName: sensors[index].sensorName,
-                      sensorType: sensors[index].type,
-                      sensorValue: 100); //Random Value Assigned.
+                      sensorName: sensors[index].getSensorName,
+                      sensorType: sensors[index].getType,
+                      sensorValue: sensors[index].getSensorValue!.toInt());
                 }));
           } else {
             return const Center(child: CircularProgressIndicator());
