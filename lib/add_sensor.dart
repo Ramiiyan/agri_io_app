@@ -127,18 +127,18 @@ class AddSensorState extends State<AddSensor> {
           )),
       floatingActionButton: FloatingActionButton.extended(
         label: const Row(children: [Icon(Icons.create), Text('Create')]),
-        onPressed: submit,
+        onPressed: _submit,
       ),
     );
   }
 
-  void submit() async {
+  void _submit() async {
     if (_formKey.currentState!.validate()) {
       ScaffoldMessenger.of(context)
           .showSnackBar(_mySnackBar("Data Processing..", color: Colors.black));
 
       final res = await httpService
-          .createSensor(Sensor.nonSensorValue(_newSensorName, _newSensorType));
+          .createSensor(Sensor.nonSensorId(_newSensorName, _newSensorType));
 
       final Map<String, dynamic> jsonResponse = jsonDecode(res);
 

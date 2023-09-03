@@ -1,22 +1,29 @@
-import 'package:flutter/foundation.dart';
-
 class Sensor {
+  String? _sensorId;
   String _sensorName;
   String _type;
   double? _sensorValue;
 
-  Sensor(this._sensorName, this._type, this._sensorValue);
-  Sensor.nonSensorValue(this._sensorName, this._type);
+  Sensor(this._sensorId, this._sensorName, this._type, this._sensorValue);
+  Sensor.nonSensorValue(this._sensorId, this._sensorName, this._type);
+  Sensor.nonSensorId(this._sensorName, this._type);
   //Sensor.withoutSensorValue({required this._sensorName, required this._type});
 
   factory Sensor.fromJson(Map<String, dynamic> json) {
-    return Sensor(json['sensorName'] as String, json['type'] as String,
-        json['sensorValue'] as double);
+    return Sensor(json['sensorId'] as String, json['sensorName'] as String,
+        json['type'] as String, json['sensorValue'] as double);
   }
 
   factory Sensor.nonSensorValuefromJson(Map<String, dynamic> json) {
-    return Sensor.nonSensorValue(
+    return Sensor.nonSensorValue(json['sensorId'] as String,
         json['sensorName'] as String, json['type'] as String);
+  }
+  set setSensorId(String sensorId) {
+    _sensorId = sensorId;
+  }
+
+  String get getSensorId {
+    return _sensorId!;
   }
 
   set setSensorName(String sensorName) {

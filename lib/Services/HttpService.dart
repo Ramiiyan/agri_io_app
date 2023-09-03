@@ -47,18 +47,46 @@ class HttpService {
 
       return res;
     } catch (e) {
-      throw Exception('error: $e');
+      throw Exception('Create Sensor error: $e');
     }
   }
 
-  // List<Sensor> decodeSensors(String responseBody) {
-  //   List<dynamic> body = jsonDecode(responseBody);
+  Future<String> editSensor(Sensor sensor) async {
+    // Need to test
+    try {
+      final response = await http.put(
+        Uri.parse("$baseURL/addSensor"),
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(sensor.toJson()),
+      );
 
-  //   List<Sensor> sensors = body
-  //       .map(
-  //         (dynamic item) => Sensor.fromJson(item),
-  //       )
-  //       .toList();
-  //   return sensors;
-  // }
+      final res = jsonEncode(<String, dynamic>{
+        'requestBody': jsonEncode(sensor.toJson()),
+        'statusCode': response.statusCode,
+        'responseBody': response.body
+      });
+      //print(res);
+
+      return res;
+    } catch (e) {
+      throw Exception('Create Sensor error: $e');
+    }
+  }
+
+  Future<String> deleteSensor(String sensorId) async {
+    // Need to test
+    try {
+      final response =
+          await http.delete(Uri.parse("$baseURL//sensor/delete/$sensorId"));
+
+      return jsonEncode(<String, dynamic>{
+        'statusCode': response.statusCode,
+        'responseBody': response.body
+      });
+    } catch (e) {
+      throw Exception("Delete Sensor error: $e");
+    }
+  }
 }

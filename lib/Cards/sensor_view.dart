@@ -16,14 +16,16 @@ class SensorViewPageState extends State<SensorViewPage> {
   List<Sensor>? sensorList;
   final sampleData = [
     {
+      "sensorId": "da0b44f86a73",
       "sensorName": "Sensor_01",
       "serial_number": "0000000001",
       "urn": "fc1d82c0-c4cd-42fe-b8f5-da0b44f86a73",
       "state": false,
       "sensorType": "Soil Moisture",
-      "sensorValue": 88
+      "sensorValue": 88,
     },
     {
+      "sensorId": "fc1d82c42fe0",
       "sensorName": "Sensor_02",
       "serial_number": "0000000001",
       "urn": "fc1d82c0-c4cd-42fe-b8f5-da0b44f86a73",
@@ -32,6 +34,7 @@ class SensorViewPageState extends State<SensorViewPage> {
       "sensorValue": 77
     },
     {
+      "sensorId": "cb8f54cb8f5d",
       "sensorName": "Sensor_03",
       "serial_number": "0000000001",
       "urn": "fc1d82c0-c4cd-42fe-b8f5-da0b44f86a73",
@@ -40,9 +43,10 @@ class SensorViewPageState extends State<SensorViewPage> {
       "sensorValue": 47
     },
     {
+      "sensorId": "da082cfc13",
       "sensorName": "Sensor_04",
       "serial_number": "0000000001",
-      "urn": "fc1d82c0-c4cd-42fe-b8f5-da0b44f86a73",
+      "urn": "fc1d82c0-c4cd-42fe-b8f5-dafe44f86a73",
       "state": false,
       "sensorType": "Soil Moisture",
       "sensorValue": 100
@@ -57,7 +61,7 @@ class SensorViewPageState extends State<SensorViewPage> {
       ),
       body: RefreshIndicator(
           onRefresh: () => refreshSensors(context),
-          child: sensorGridView2(context)),
+          child: sensorGridView(context)),
       floatingActionButton: FloatingActionButton(
           heroTag: 'SensorTag',
           // backgroundColor: Color.fromARGB(0, 255, 255, 255),
@@ -94,6 +98,7 @@ class SensorViewPageState extends State<SensorViewPage> {
                 itemBuilder: ((context, index) {
                   return sensorCard(
                       context: context,
+                      sensorId: sensors[index].getSensorId,
                       sensorName: sensors[index].getSensorName,
                       sensorType: sensors[index].getType,
                       sensorValue: sensors[index].getSensorValue!.toInt());
@@ -116,6 +121,7 @@ class SensorViewPageState extends State<SensorViewPage> {
           var item = sampleData[index];
           return sensorCard(
               context: context,
+              sensorId: item['sensorId'].toString(),
               sensorName: item['sensorName'].toString(),
               sensorType: item['sensorType'].toString(),
               sensorValue: item['sensorValue'] as int);
@@ -124,6 +130,7 @@ class SensorViewPageState extends State<SensorViewPage> {
 
   Widget sensorCard(
       {required BuildContext context,
+      required String sensorId,
       required String sensorName,
       required String sensorType,
       int? sensorValue}) {
@@ -134,20 +141,88 @@ class SensorViewPageState extends State<SensorViewPage> {
         Container(
           height: 10,
         ),
-        Text(sensorName,
-            style: MyTextSample.title(context)!
-                .copyWith(color: MyColorsSample.grey_80)),
-        Container(
-          height: 10,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(sensorName,
+                    style: MyTextSample.title(context)!
+                        .copyWith(color: MyColorsSample.grey_80)),
+                Container(
+                  height: 10,
+                ),
+                Text(sensorType),
+              ],
+            ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    SizedBox(
+                      width: 30,
+                      child: IconButton(
+                          onPressed: () {},
+                          icon: const Icon(
+                            Icons.edit,
+                          )),
+                    ),
+                    SizedBox(
+                      width: 30,
+                      child: IconButton(
+                          onPressed: () => _deleteSensor(sensorId),
+                          icon: const Icon(
+                            Icons.delete,
+                          )),
+                    ),
+                  ],
+                ),
+              ],
+            )
+          ],
         ),
-        Text(sensorType),
         Container(
-          height: 30,
+          height: 25,
         ),
         Text("$sensorValue %",
             style: MyTextSample.display2(context)!
                 .copyWith(color: const Color.fromARGB(255, 0, 0, 0))),
       ],
     ));
+  }
+
+  void _deleteSensor(String sensorId) async {
+    print("Sensor Id for deletion: $sensorId");
+    // final res = await httpService.deleteSensor(sensorId);
+
+    // if (_formKey.currentState!.validate()) {
+    //   ScaffoldMessenger.of(context)
+    //       .showSnackBar(_mySnackBar("Data Processing..", color: Colors.black));
+
+    //   final res = await httpService
+    //       .createSensor(Sensor.nonSensorValue(_newSensorName, _newSensorType));
+
+    //   final Map<String, dynamic> jsonResponse = jsonDecode(res);
+
+    //   ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+    //   if (jsonResponse['statusCode'] == 200) {
+    //     ScaffoldMessenger.of(context)
+    //         .showSnackBar(_mySnackBar("Created Successfully."));
+    //     Navigator.of(context)
+    //         .pushNamedAndRemoveUntil(Routes.sensorView, (route) => false);
+    //   } else {
+    //     ScaffoldMessenger.of(context).showSnackBar(_mySnackBar(
+    //         "Failed to create. Try again.",
+    //         due: 10,
+    //         color: Colors.red));
+    //   }
+    // }
   }
 }
