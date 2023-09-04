@@ -145,28 +145,20 @@ class AppWidgets {
     );
   }
 
-  showAlertDialog() {
-    // set up the button
-    Widget okButton = TextButton(
-      child: Text("OK"),
-      onPressed: () => Navigator.pop(context),
-    );
+  SnackBar notifySnackBar(String msg,
+      {int due = 3, Color color = const Color.fromARGB(255, 59, 197, 64)}) {
+    final scaff = ScaffoldMessenger.of(context);
 
-    // set up the AlertDialog
-    AlertDialog alert = AlertDialog(
-      title: const Text("Request Failed"),
-      content: const Text("Your toggle request failed."),
-      actions: [
-        okButton,
-      ],
+    final snackBar = SnackBar(
+      content: Text(msg),
+      backgroundColor: color,
+      duration: Duration(seconds: due),
+      clipBehavior: Clip.antiAlias,
+      action: SnackBarAction(
+        label: 'CLOSE',
+        onPressed: scaff.hideCurrentSnackBar,
+      ),
     );
-
-    // show the dialog
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return alert;
-      },
-    );
+    return snackBar;
   }
 }

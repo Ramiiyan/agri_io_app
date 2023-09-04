@@ -52,10 +52,11 @@ class HttpService {
   }
 
   Future<String> editSensor(Sensor sensor) async {
+    String sensorId = sensor.getSensorId;
     // Need to test
     try {
       final response = await http.put(
-        Uri.parse("$baseURL/addSensor"),
+        Uri.parse("$baseURL/sensor/edit/$sensorId"),
         headers: <String, String>{
           'Content-Type': 'application/json',
         },
@@ -76,10 +77,9 @@ class HttpService {
   }
 
   Future<String> deleteSensor(String sensorId) async {
-    // Need to test
     try {
       final response =
-          await http.delete(Uri.parse("$baseURL//sensor/delete/$sensorId"));
+          await http.delete(Uri.parse("$baseURL/sensor/delete/$sensorId"));
 
       return jsonEncode(<String, dynamic>{
         'statusCode': response.statusCode,

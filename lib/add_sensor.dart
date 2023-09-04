@@ -134,8 +134,8 @@ class AddSensorState extends State<AddSensor> {
 
   void _submit() async {
     if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(_mySnackBar("Data Processing..", color: Colors.black));
+      ScaffoldMessenger.of(context).showSnackBar(AppWidgets(context)
+          .notifySnackBar("Data Processing..", color: Colors.black));
 
       final res = await httpService
           .createSensor(Sensor.nonSensorId(_newSensorName, _newSensorType));
@@ -145,33 +145,15 @@ class AddSensorState extends State<AddSensor> {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
       if (jsonResponse['statusCode'] == 200) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(_mySnackBar("Created Successfully."));
+        ScaffoldMessenger.of(context).showSnackBar(
+            AppWidgets(context).notifySnackBar("Created Successfully."));
         Navigator.of(context)
             .pushNamedAndRemoveUntil(Routes.sensorView, (route) => false);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(_mySnackBar(
-            "Failed to create. Try again.",
-            due: 10,
-            color: Colors.red));
+        ScaffoldMessenger.of(context).showSnackBar(AppWidgets(context)
+            .notifySnackBar("Failed to create. Try again.",
+                due: 10, color: Colors.red));
       }
     }
-  }
-
-  SnackBar _mySnackBar(String msg,
-      {int due = 3, Color color = const Color.fromARGB(255, 59, 197, 64)}) {
-    final scaff = ScaffoldMessenger.of(context);
-
-    final snackBar = SnackBar(
-      content: Text(msg),
-      backgroundColor: color,
-      duration: Duration(seconds: due),
-      clipBehavior: Clip.antiAlias,
-      action: SnackBarAction(
-        label: 'CLOSE',
-        onPressed: scaff.hideCurrentSnackBar,
-      ),
-    );
-    return snackBar;
   }
 }

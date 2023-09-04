@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:agri_io_app/BaseComponents/AppWidgets.dart';
 import 'package:agri_io_app/Models/sensor_model.dart';
 import 'package:agri_io_app/Services/HttpService.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +17,8 @@ class SensorViewPage extends StatefulWidget {
 class SensorViewPageState extends State<SensorViewPage> {
   final HttpService httpService = HttpService();
   List<Sensor>? sensorList;
+  final _editFormKey = GlobalKey<FormState>();
+  late String _editSensorName, _editSensorType;
   final sampleData = [
     {
       "sensorId": "da0b44f86a73",
@@ -61,7 +66,7 @@ class SensorViewPageState extends State<SensorViewPage> {
       ),
       body: RefreshIndicator(
           onRefresh: () => refreshSensors(context),
-          child: sensorGridView(context)),
+          child: sensorGridView2(context)),
       floatingActionButton: FloatingActionButton(
           heroTag: 'SensorTag',
           // backgroundColor: Color.fromARGB(0, 255, 255, 255),
@@ -168,7 +173,8 @@ class SensorViewPageState extends State<SensorViewPage> {
                     SizedBox(
                       width: 30,
                       child: IconButton(
-                          onPressed: () {},
+                          onPressed: () =>
+                              _showEditDialog(sensorId, sensorName, sensorType),
                           icon: const Icon(
                             Icons.edit,
                           )),
@@ -176,7 +182,8 @@ class SensorViewPageState extends State<SensorViewPage> {
                     SizedBox(
                       width: 30,
                       child: IconButton(
-                          onPressed: () => _deleteSensor(sensorId),
+                          onPressed: () =>
+                              _showDeleteDialog(sensorId, sensorName),
                           icon: const Icon(
                             Icons.delete,
                           )),
@@ -197,32 +204,199 @@ class SensorViewPageState extends State<SensorViewPage> {
     ));
   }
 
-  void _deleteSensor(String sensorId) async {
-    print("Sensor Id for deletion: $sensorId");
-    // final res = await httpService.deleteSensor(sensorId);
+  Future<void> _showDeleteDialog(String sensorId, String sensorName) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Caution!'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Are you sure you want to delete this $sensorName Sensor?')
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text(
+                'Delete',
+                style: TextStyle(color: Colors.red),
+              ),
+              onPressed: () async {
+                _deleteSensor(sensorName, sensorId);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
-    // if (_formKey.currentState!.validate()) {
-    //   ScaffoldMessenger.of(context)
-    //       .showSnackBar(_mySnackBar("Data Processing..", color: Colors.black));
+  Future<void> _showEditDialog(
+      String sensorId, String sensorName, String sensorType) async {
+    _editSensorName = sensorName;
+    _editSensorType = sensorType;
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Modify Sensor'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Form(
+                    key: _editFormKey,
+                    child: Column(children: <Widget>[
+                      Container(
+                        margin: const EdgeInsets.symmetric(vertical: 10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            const Text(
+                              "Sensor Name",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 15),
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            TextFormField(
+                                initialValue: sensorName,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _editSensorName = value.toString();
+                                  });
+                                },
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter some text';
+                                  }
+                                  // if (_editSensorName.isEmpty) {
+                                  //   _editSensorName = sensorName;
+                                  // }
+                                  // if (_editSensorType.isEmpty) {
+                                  //   _editSensorType = sensorType;
+                                  // }
+                                  return null;
+                                },
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
+                                decoration: const InputDecoration(
+                                    border: InputBorder.none,
+                                    fillColor: Color(0xfff3f3f4),
+                                    filled: true)),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.symmetric(vertical: 10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            const Text(
+                              "Sensor Type",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 15),
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            TextFormField(
+                                initialValue: sensorType,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _editSensorType = value.toString();
+                                  });
+                                },
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter some text';
+                                  }
+                                  return null;
+                                },
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
+                                decoration: const InputDecoration(
+                                    border: InputBorder.none,
+                                    fillColor: Color(0xfff3f3f4),
+                                    filled: true)),
+                          ],
+                        ),
+                      ),
+                    ])),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Modify'),
+              onPressed: () async {
+                _editSensor(sensorId, _editSensorName, _editSensorType);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
-    //   final res = await httpService
-    //       .createSensor(Sensor.nonSensorValue(_newSensorName, _newSensorType));
+  void _deleteSensor(String sensorName, String sensorId) async {
+    //print("Sensor Id for deletion: $sensorId");
 
-    //   final Map<String, dynamic> jsonResponse = jsonDecode(res);
+    final res = await httpService.deleteSensor(sensorId);
 
-    //   ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    final Map<String, dynamic> jsonResponse = jsonDecode(res);
 
-    //   if (jsonResponse['statusCode'] == 200) {
-    //     ScaffoldMessenger.of(context)
-    //         .showSnackBar(_mySnackBar("Created Successfully."));
-    //     Navigator.of(context)
-    //         .pushNamedAndRemoveUntil(Routes.sensorView, (route) => false);
-    //   } else {
-    //     ScaffoldMessenger.of(context).showSnackBar(_mySnackBar(
-    //         "Failed to create. Try again.",
-    //         due: 10,
-    //         color: Colors.red));
-    //   }
-    // }
+    if (jsonResponse['statusCode'] == 200) {
+      ScaffoldMessenger.of(context).showSnackBar(AppWidgets(context)
+          .notifySnackBar("Deleted Successfully.", color: Colors.red));
+      Navigator.of(context)
+          .pushNamedAndRemoveUntil(Routes.sensorView, (route) => false);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(AppWidgets(context)
+          .notifySnackBar("Failed to Delete. Try again.",
+              due: 10, color: Colors.red));
+    }
+  }
+
+  void _editSensor(
+      String sensorId, String sensorName, String sensorType) async {
+    if (_editFormKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(AppWidgets(context)
+          .notifySnackBar("Data Processing..", color: Colors.black));
+
+      final res = await httpService
+          .editSensor(Sensor.nonSensorValue(sensorId, sensorName, sensorType));
+
+      final Map<String, dynamic> jsonResponse = jsonDecode(res);
+
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+      if (jsonResponse['statusCode'] == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            AppWidgets(context).notifySnackBar("Modified Successfully."));
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil(Routes.sensorView, (route) => false);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(AppWidgets(context)
+            .notifySnackBar("Failed to create. Try again.",
+                due: 10, color: Colors.red));
+      }
+    }
   }
 }
