@@ -1,25 +1,24 @@
 import 'package:agri_io_app/routes/Routes.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-void main() => runApp(const MyApp());
+void main() {
+  // WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  // FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  runApp(const MyApp());
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
     return MaterialApp(
       title: 'Agri.IO',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        textTheme: GoogleFonts.latoTextTheme(textTheme).copyWith(
-          bodyLarge: GoogleFonts.montserrat(textStyle: textTheme.bodyLarge),
-        ),
-      ),
+      theme: agrioAppTheme(context, false),
       debugShowCheckedModeBanner: false,
-      initialRoute: '/sensors',
+      initialRoute: '/login',
       routes: Routes.customRoutes,
     );
     // Scaffold(
@@ -45,40 +44,26 @@ class MyApp extends StatelessWidget {
     //   //backgroundColor: Colors.black,
     // );
   }
-
-  // Widget myCard = Container(
-  //   padding: const EdgeInsets.all(32),
-  //   child: Row,
-  // );
 }
 
-// class CardSample extends StatelessWidget {
-//   const CardSample({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return const Card(
-//         child: Column(
-//       mainAxisSize: MainAxisSize.min,
-//       mainAxisAlignment: MainAxisAlignment.start,
-//       children: <Widget>[
-//         Row(
-//           mainAxisAlignment: MainAxisAlignment.start,
-//           children: <Widget>[
-//             Text("Moisture Level"),
-//           ],
-//         ),
-//         Text(
-//           "Moisture Level",
-//           textAlign: TextAlign.right,
-//         ),
-//         ListTile(
-//             leading: Icon(Icons.album),
-//             title: Text('The Enchanted Nightingale'),
-//             subtitle: Text('Music by Julie Gable. Lyrics by Sidney Stein.')),
-//       ],
-//     ));
-//     // ignore: dead_code
-//     throw UnimplementedError();
-//   }
-// }
+ThemeData agrioAppTheme(BuildContext context, bool isDarkTheme) {
+  return ThemeData(
+    primarySwatch: Colors.green,
+    primaryColor: Colors.green,
+    scaffoldBackgroundColor: isDarkTheme ? Colors.black : Colors.white,
+    textTheme: GoogleFonts.latoTextTheme(Theme.of(context).textTheme).copyWith(
+      bodyLarge: GoogleFonts.montserrat(
+          textStyle: Theme.of(context).textTheme.bodyLarge),
+    ),
+    switchTheme: SwitchThemeData(
+      thumbColor:
+          MaterialStateProperty.all(isDarkTheme ? Colors.orange : Colors.green),
+    ),
+    listTileTheme: ListTileThemeData(
+        iconColor: isDarkTheme ? Colors.orange : Colors.green),
+    appBarTheme: AppBarTheme(
+        backgroundColor: isDarkTheme ? Colors.black : Colors.white,
+        iconTheme:
+            IconThemeData(color: isDarkTheme ? Colors.white : Colors.black54)),
+  );
+}

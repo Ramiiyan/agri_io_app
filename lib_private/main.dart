@@ -1,3 +1,4 @@
+import 'package:agri_io_app/routes/Routes.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:smartsocketapp/WifiSetupInfo.dart';
@@ -28,6 +29,6 @@ class MyApp extends StatelessWidget {
         ),
         debugShowCheckedModeBanner: false,
         initialRoute: '/',
-        routes: Routes.cutomRoutes);
+        routes: Routes.customRoutes);
   }
 }

@@ -5,8 +5,8 @@ import 'package:agri_io_app/Models/sensor_model.dart';
 import 'package:agri_io_app/Services/HttpService.dart';
 import 'package:flutter/material.dart';
 
-import '../routes/Routes.dart';
-import 'internalClass.dart';
+import 'routes/Routes.dart';
+import 'Cards/internalClass.dart';
 
 class SensorViewPage extends StatefulWidget {
   SensorViewPage({super.key});
@@ -57,6 +57,12 @@ class SensorViewPageState extends State<SensorViewPage> {
       "sensorValue": 100
     }
   ];
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
