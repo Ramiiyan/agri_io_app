@@ -1,10 +1,15 @@
 import 'dart:convert';
 
+import 'package:agri_io_app/Models/socketDto_model.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
+
 import 'package:agri_io_app/BaseComponents/AppWidgets.dart';
 import 'package:agri_io_app/Models/sensor_model.dart';
 import 'package:agri_io_app/Services/HttpService.dart';
 import 'package:flutter/material.dart';
+import 'package:socket_io_client/socket_io_client.dart';
 
+import 'Services/StreamStocket.dart';
 import 'routes/Routes.dart';
 import 'Cards/internalClass.dart';
 
@@ -16,7 +21,10 @@ class SensorViewPage extends StatefulWidget {
 
 class SensorViewPageState extends State<SensorViewPage> {
   final HttpService httpService = HttpService();
-  List<Sensor>? sensorList;
+  late IO.Socket socket;
+  StreamSocket streamSocket = StreamSocket();
+
+  List<Sensor>? _sensorList, _socketSensorList;
   final _editFormKey = GlobalKey<FormState>();
   late String _editSensorName, _editSensorType;
   final sampleData = [
@@ -61,18 +69,62 @@ class SensorViewPageState extends State<SensorViewPage> {
   @override
   void initState() {
     // TODO: implement initState
+    // WidgetsBinding.instance.addPostFrameCallback((_) async {
+    //   await refreshSensors();
+    //   setState(() {});
+    // });
+    initSocket();
+    dataListener();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    socket.disconnect();
+    socket.dispose();
+    super.dispose();
+  }
+
+  initSocket() {
+    socket = IO.io(
+        'http://localhost:9092/?room=a',
+        OptionBuilder()
+            .setTransports(['websocket']) // for Flutter or Dart VM
+            .disableAutoConnect() // disable auto-connection
+            .build());
+    socket.connect();
+    socket.onConnect((_) {
+      print('Connection established');
+    });
+    // socket.on('user112', (data) => streamSocket.addResponse);
+    socket.onDisconnect((_) => print('Connection Disconnection'));
+    socket.onConnectError((err) => print(err));
+    socket.onError((err) => print(err));
+  }
+
+  dataListener() {
+    socket.on('user112', (data) {
+      print("Received Socket Data: ${data["message"]}");
+      SocketDto socketDto = SocketDto.fromJson(data as Map<String, dynamic>);
+      setState(() {
+        _socketSensorList = socketDto.getSocketSensorList;
+        // _sensorList![0].setSensorValue =
+        //     socketDto.getSocketMessage[0].getSensorValue!;
+      });
+      //print("Received Socket Data: $data");
+      print(
+          "Received Sensor Valueeeeeee: ${_socketSensorList![0].getSensorValue}");
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Agri.IO'),
+        title: const Text('AGRI.IO'),
       ),
       body: RefreshIndicator(
-          onRefresh: () => refreshSensors(context),
-          child: sensorGridView2(context)),
+          onRefresh: () => refreshSensors(), child: sensorGridView2(context)),
       floatingActionButton: FloatingActionButton(
           heroTag: 'SensorTag',
           // backgroundColor: Color.fromARGB(0, 255, 255, 255),
@@ -81,24 +133,41 @@ class SensorViewPageState extends State<SensorViewPage> {
             size: 55,
           ),
           onPressed: () {
+            // dataListener();
             Navigator.of(context).pushNamed(Routes.addSensor);
           }),
     );
   }
 
-  Future<void> refreshSensors(BuildContext context) async {
+  Future<void> refreshSensors() async {
     final sensors = await httpService.fetchSensors();
     setState(() {
-      sensorList = sensors;
+      _sensorList = sensors;
+      // _socketSensorList = sensors;
     });
   }
 
-  Widget sensorGridView2(BuildContext context) {
-    return FutureBuilder(
-        future: httpService.fetchSensors(),
+  int? getMqttSensorData(String sensorId) {
+    print("this sensorId:$sensorId");
+    if (_socketSensorList != null) {
+      Sensor? relevantSensor = _socketSensorList!
+          .where((element) => element.getSensorId == sensorId)
+          .firstOrNull;
+
+      print("getMqttSensorData: ${relevantSensor?.getSensorValue}");
+      return relevantSensor?.getSensorValue?.round() ?? 0;
+    } else {
+      return 1;
+    }
+  }
+
+  Widget streamSensorGridView(BuildContext context) {
+    return StreamBuilder(
+        stream: streamSocket.getResponse,
         builder: (BuildContext context, AsyncSnapshot snapshot) {
-          if (snapshot.hasData) {
-            List<Sensor>? sensors = snapshot.data;
+          if (_sensorList != null) {
+            List<Sensor>? sensors = _sensorList;
+            print("StreamSensor :${snapshot.data}");
             return GridView.builder(
                 gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                   maxCrossAxisExtent: 200,
@@ -112,7 +181,36 @@ class SensorViewPageState extends State<SensorViewPage> {
                       sensorId: sensors[index].getSensorId,
                       sensorName: sensors[index].getSensorName,
                       sensorType: sensors[index].getType,
-                      sensorValue: sensors[index].getSensorValue!.toInt());
+                      sensorValue: sensors[index].getSensorValue as int);
+                }));
+          } else {
+            return const Center(child: CircularProgressIndicator());
+          }
+        });
+  }
+
+  Widget sensorGridView2(BuildContext context) {
+    return FutureBuilder(
+        future: httpService.fetchSensors(),
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          if (snapshot.hasData) {
+            List<Sensor>? sensors = snapshot.data;
+
+            return GridView.builder(
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 200,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                ),
+                itemCount: sensors!.length,
+                itemBuilder: ((context, index) {
+                  return sensorCard(
+                      context: context,
+                      sensorId: sensors[index].getSensorId,
+                      sensorName: sensors[index].getSensorName,
+                      sensorType: sensors[index].getType,
+                      sensorValue:
+                          getMqttSensorData(sensors[index].getSensorId));
                 }));
           } else {
             return const Center(child: CircularProgressIndicator());
@@ -209,6 +307,27 @@ class SensorViewPageState extends State<SensorViewPage> {
       ],
     ));
   }
+
+  Widget _buildStreamBuilder(Stream<String>? stream) {
+    return Center(
+      child: StreamBuilder(
+        stream: stream,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.active) {
+            return Text("${snapshot.data}");
+          }
+          return const CircularProgressIndicator();
+        },
+      ),
+    );
+  }
+
+  // final builder = StreamBuilder(
+  //     stream: streamSocket.getResponse,
+  //     builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+  //       String? testValue = snapshot.data;
+  //       return Text("$testValue");
+  //     });
 
   Future<void> _showDeleteDialog(String sensorId, String sensorName) async {
     return showDialog<void>(

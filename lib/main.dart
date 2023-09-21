@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'Cards/internalClass.dart';
+
 void main() {
   // WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   // FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
@@ -62,8 +64,11 @@ ThemeData agrioAppTheme(BuildContext context, bool isDarkTheme) {
     listTileTheme: ListTileThemeData(
         iconColor: isDarkTheme ? Colors.orange : Colors.green),
     appBarTheme: AppBarTheme(
+        titleTextStyle: GoogleFonts.raleway(
+            textStyle: MyTextSample.title(context)!
+                .copyWith(color: Colors.green, fontWeight: FontWeight.bold)),
         backgroundColor: isDarkTheme ? Colors.black : Colors.white,
         iconTheme:
-            IconThemeData(color: isDarkTheme ? Colors.white : Colors.black54)),
+            IconThemeData(color: isDarkTheme ? Colors.green : Colors.black54)),
   );
 }

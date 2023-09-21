@@ -10,6 +10,7 @@ class Sensor {
   //Sensor.withoutSensorValue({required this._sensorName, required this._type});
 
   factory Sensor.fromJson(Map<String, dynamic> json) {
+    print("Sensor: json : ${json['type']}");
     return Sensor(json['sensorId'] as String, json['sensorName'] as String,
         json['type'] as String, json['sensorValue'] as double);
   }
