@@ -161,34 +161,6 @@ class SensorViewPageState extends State<SensorViewPage> {
     }
   }
 
-  Widget streamSensorGridView(BuildContext context) {
-    return StreamBuilder(
-        stream: streamSocket.getResponse,
-        builder: (BuildContext context, AsyncSnapshot snapshot) {
-          if (_sensorList != null) {
-            List<Sensor>? sensors = _sensorList;
-            print("StreamSensor :${snapshot.data}");
-            return GridView.builder(
-                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: 200,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                ),
-                itemCount: sensors!.length,
-                itemBuilder: ((context, index) {
-                  return sensorCard(
-                      context: context,
-                      sensorId: sensors[index].getSensorId,
-                      sensorName: sensors[index].getSensorName,
-                      sensorType: sensors[index].getType,
-                      sensorValue: sensors[index].getSensorValue as int);
-                }));
-          } else {
-            return const Center(child: CircularProgressIndicator());
-          }
-        });
-  }
-
   Widget sensorGridView2(BuildContext context) {
     return FutureBuilder(
         future: httpService.fetchSensors(),
@@ -218,7 +190,7 @@ class SensorViewPageState extends State<SensorViewPage> {
         });
   }
 
-  Widget sensorGridView(BuildContext context) {
+  Widget sensorGridViewTest(BuildContext context) {
     return GridView.builder(
         gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
           maxCrossAxisExtent: 200,
@@ -235,6 +207,34 @@ class SensorViewPageState extends State<SensorViewPage> {
               sensorType: item['sensorType'].toString(),
               sensorValue: item['sensorValue'] as int);
         }));
+  }
+
+  Widget streamSensorGridView(BuildContext context) {
+    return StreamBuilder(
+        stream: streamSocket.getResponse,
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          if (_sensorList != null) {
+            List<Sensor>? sensors = _sensorList;
+            print("StreamSensor :${snapshot.data}");
+            return GridView.builder(
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 200,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                ),
+                itemCount: sensors!.length,
+                itemBuilder: ((context, index) {
+                  return sensorCard(
+                      context: context,
+                      sensorId: sensors[index].getSensorId,
+                      sensorName: sensors[index].getSensorName,
+                      sensorType: sensors[index].getType,
+                      sensorValue: sensors[index].getSensorValue as int);
+                }));
+          } else {
+            return const Center(child: CircularProgressIndicator());
+          }
+        });
   }
 
   Widget sensorCard(
@@ -321,13 +321,6 @@ class SensorViewPageState extends State<SensorViewPage> {
       ),
     );
   }
-
-  // final builder = StreamBuilder(
-  //     stream: streamSocket.getResponse,
-  //     builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-  //       String? testValue = snapshot.data;
-  //       return Text("$testValue");
-  //     });
 
   Future<void> _showDeleteDialog(String sensorId, String sensorName) async {
     return showDialog<void>(
