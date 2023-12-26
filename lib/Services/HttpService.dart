@@ -43,7 +43,30 @@ class HttpService {
         'statusCode': response.statusCode,
         'responseBody': response.body
       });
-      //print(res);
+      print("HTTP create response: $res");
+
+      return res;
+    } catch (e) {
+      throw Exception('Create Sensor error: $e');
+    }
+  }
+
+  Future<String> createSensorWithId(Sensor sensor) async {
+    try {
+      final response = await http.post(
+        Uri.parse("$baseURL/addSensor"),
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(sensor.toJsonWithId()),
+      );
+
+      final res = jsonEncode(<String, dynamic>{
+        'requestBody': jsonEncode(sensor.toJsonWithId()),
+        'statusCode': response.statusCode,
+        'responseBody': response.body
+      });
+      print("HTTP create response: $res");
 
       return res;
     } catch (e) {

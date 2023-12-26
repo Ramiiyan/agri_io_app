@@ -26,7 +26,7 @@ class SensorViewPageState extends State<SensorViewPage> {
 
   List<Sensor>? _sensorList, _socketSensorList;
   final _editFormKey = GlobalKey<FormState>();
-  late String _editSensorName, _editSensorType;
+  late String _editSensorName, _editSensorType, _addSensorId;
   final sampleData = [
     {
       "sensorId": "da0b44f86a73",
@@ -69,10 +69,10 @@ class SensorViewPageState extends State<SensorViewPage> {
   @override
   void initState() {
     // TODO: implement initState
-    // WidgetsBinding.instance.addPostFrameCallback((_) async {
-    //   await refreshSensors();
-    //   setState(() {});
-    // });
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await refreshSensors();
+      setState(() {});
+    });
     initSocket();
     dataListener();
     super.initState();
@@ -111,7 +111,42 @@ class SensorViewPageState extends State<SensorViewPage> {
         // _sensorList![0].setSensorValue =
         //     socketDto.getSocketMessage[0].getSensorValue!;
       });
-      //print("Received Socket Data: $data");
+      if (_socketSensorList != null && _sensorList != null) {
+        print("=====================START===============================");
+        List<dynamic>? dbSensorIds =
+            _sensorList?.map((dbSensor) => dbSensor.getSensorId).toList();
+
+// Extract the sensor IDs from mqttList
+        List<dynamic>? mqttSensorIds = _socketSensorList
+            ?.map((socketSensor) => socketSensor.getSensorId)
+            .toList();
+
+// Find the sensor IDs that exist in mqttList but not in dbList
+        List<dynamic>? nonExistentSensorIds = mqttSensorIds
+            ?.where((sensorId) => !dbSensorIds!.contains(sensorId))
+            .toList();
+
+        List<Sensor>? nonExistentSensors = _socketSensorList
+            ?.where((socketSensor) =>
+                nonExistentSensorIds!.contains(socketSensor.getSensorId))
+            .toList();
+        if (nonExistentSensorIds!.isNotEmpty) {
+          print(
+              "Sensor IDs in mqttList but not in dbList: $nonExistentSensorIds");
+          print("Maps for non-existent sensors: $nonExistentSensors");
+          nonExistentSensors?.forEach((detectedSensor) {
+            _showEditOrAddDialog(detectedSensor.getSensorId,
+                detectedSensor.getSensorName, detectedSensor.getType,
+                addAsNewSensor: true);
+            //_showNewSensorDialog();
+          });
+          refreshSensors();
+        } else {
+          print("No new Sensors Found!");
+        }
+
+        print("=====================END===============================");
+      }
       print(
           "Received Sensor Valueeeeeee: ${_socketSensorList![0].getSensorValue}");
     });
@@ -143,7 +178,7 @@ class SensorViewPageState extends State<SensorViewPage> {
     final sensors = await httpService.fetchSensors();
     setState(() {
       _sensorList = sensors;
-      // _socketSensorList = sensors;
+      //_socketSensorList = sensors;
     });
   }
 
@@ -277,8 +312,8 @@ class SensorViewPageState extends State<SensorViewPage> {
                     SizedBox(
                       width: 30,
                       child: IconButton(
-                          onPressed: () =>
-                              _showEditDialog(sensorId, sensorName, sensorType),
+                          onPressed: () => _showEditOrAddDialog(
+                              sensorId, sensorName, sensorType),
                           icon: const Icon(
                             Icons.edit,
                           )),
@@ -358,8 +393,35 @@ class SensorViewPageState extends State<SensorViewPage> {
     );
   }
 
-  Future<void> _showEditDialog(
-      String sensorId, String sensorName, String sensorType) async {
+  Future<void> _showNewSensorDialog() {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Caution!'),
+          content: const SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[Text('New Sensor Found!')],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _showEditOrAddDialog(
+      String sensorId, String sensorName, String sensorType,
+      {bool addAsNewSensor = false}) async {
+    _addSensorId = sensorId;
     _editSensorName = sensorName;
     _editSensorType = sensorType;
     return showDialog<void>(
@@ -367,13 +429,57 @@ class SensorViewPageState extends State<SensorViewPage> {
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Modify Sensor'),
+          title: Text(addAsNewSensor ? 'New Sensor Found!' : 'Modify Sensor'),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
                 Form(
                     key: _editFormKey,
                     child: Column(children: <Widget>[
+                      // Sensor ID only for Adding scenario
+                      Container(
+                          margin: const EdgeInsets.symmetric(vertical: 10),
+                          child: addAsNewSensor
+                              ? Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    const Text(
+                                      "Sensor ID",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15),
+                                    ),
+                                    const SizedBox(
+                                      height: 10,
+                                    ),
+                                    TextFormField(
+                                        initialValue: sensorId,
+                                        onChanged: (value) {
+                                          setState(() {
+                                            _addSensorId = value.toString();
+                                          });
+                                        },
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty) {
+                                            return 'Please enter some text';
+                                          }
+                                          // if (_editSensorName.isEmpty) {
+                                          //   _editSensorName = sensorName;
+                                          // }
+                                          // if (_editSensorType.isEmpty) {
+                                          //   _editSensorType = sensorType;
+                                          // }
+                                          return null;
+                                        },
+                                        autovalidateMode:
+                                            AutovalidateMode.onUserInteraction,
+                                        decoration: const InputDecoration(
+                                            border: InputBorder.none,
+                                            fillColor: Color(0xfff3f3f4),
+                                            filled: true)),
+                                  ],
+                                )
+                              : null),
                       Container(
                         margin: const EdgeInsets.symmetric(vertical: 10),
                         child: Column(
@@ -462,9 +568,10 @@ class SensorViewPageState extends State<SensorViewPage> {
               },
             ),
             TextButton(
-              child: const Text('Modify'),
+              child: Text(addAsNewSensor ? 'Add' : 'Modify'),
               onPressed: () async {
-                _editSensor(sensorId, _editSensorName, _editSensorType);
+                _editOrAddSensor(sensorId, _editSensorName, _editSensorType,
+                    addAsNewSensor: addAsNewSensor);
               },
             ),
           ],
@@ -492,15 +599,20 @@ class SensorViewPageState extends State<SensorViewPage> {
     }
   }
 
-  void _editSensor(
-      String sensorId, String sensorName, String sensorType) async {
+  void _editOrAddSensor(String sensorId, String sensorName, String sensorType,
+      {bool addAsNewSensor = false}) async {
     if (_editFormKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(AppWidgets(context)
           .notifySnackBar("Data Processing..", color: Colors.black));
-
-      final res = await httpService
-          .editSensor(Sensor.nonSensorValue(sensorId, sensorName, sensorType));
-
+      final res;
+      if (addAsNewSensor) {
+        print("Added the Sensor as New Sensor to DB...");
+        res = await httpService.createSensorWithId(
+            Sensor.nonSensorValue(sensorId, sensorName, sensorType));
+      } else {
+        res = await httpService.editSensor(
+            Sensor.nonSensorValue(sensorId, sensorName, sensorType));
+      }
       final Map<String, dynamic> jsonResponse = jsonDecode(res);
 
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -512,7 +624,7 @@ class SensorViewPageState extends State<SensorViewPage> {
             .pushNamedAndRemoveUntil(Routes.sensorView, (route) => false);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(AppWidgets(context)
-            .notifySnackBar("Failed to create. Try again.",
+            .notifySnackBar("Failed to Modify. Try again.",
                 due: 10, color: Colors.red));
       }
     }

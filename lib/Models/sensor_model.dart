@@ -58,8 +58,16 @@ class Sensor {
     return data;
   }
 
+  Map<String, dynamic> toJsonWithId() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['sensorId'] = _sensorId;
+    data['sensorName'] = _sensorName;
+    data['type'] = _type;
+    return data;
+  }
+
   @override
   String toString() {
-    return '{ "sensorName":"$_sensorName", "type":"$_type" }';
+    return '{ "sensorId":"$_sensorId", "sensorName":"$_sensorName", "type":"$_type", "sensorValue":"$_sensorValue" }';
   }
 }
