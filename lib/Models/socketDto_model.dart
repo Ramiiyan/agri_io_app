@@ -9,7 +9,7 @@ class SocketDto {
   SocketDto(this._socketType, this._socketSensorList);
 
   factory SocketDto.fromJson(Map<String, dynamic> jsonData) {
-    print("SocketDto: jsonData['message'] : ${jsonData['message']}");
+    // print("SocketDto: jsonData['message'] : ${jsonData['message']}");
     List<dynamic> dataPayload = jsonDecode(jsonData['message']);
     List<Sensor> mqttResSensors = dataPayload
         .map(

@@ -34,6 +34,9 @@ class HttpService {
         Uri.parse("$baseURL/addSensor"),
         headers: <String, String>{
           'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods':
+              'POST, GET, OPTIONS, PUT, DELETE, HEAD',
         },
         body: jsonEncode(sensor.toJson()),
       );
@@ -57,6 +60,9 @@ class HttpService {
         Uri.parse("$baseURL/addSensor"),
         headers: <String, String>{
           'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods':
+              'POST, GET, OPTIONS, PUT, DELETE, HEAD',
         },
         body: jsonEncode(sensor.toJsonWithId()),
       );
@@ -82,6 +88,9 @@ class HttpService {
         Uri.parse("$baseURL/sensor/edit/$sensorId"),
         headers: <String, String>{
           'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods':
+              'POST, GET, OPTIONS, PUT, DELETE, HEAD',
         },
         body: jsonEncode(sensor.toJson()),
       );

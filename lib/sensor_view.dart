@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:agri_io_app/Models/socketDto_model.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
@@ -104,7 +105,7 @@ class SensorViewPageState extends State<SensorViewPage> {
 
   dataListener() {
     socket.on('user112', (data) {
-      print("Received Socket Data: ${data["message"]}");
+      //print("Received Socket Data: ${data["message"]}");
       SocketDto socketDto = SocketDto.fromJson(data as Map<String, dynamic>);
       setState(() {
         _socketSensorList = socketDto.getSocketSensorList;
@@ -112,7 +113,7 @@ class SensorViewPageState extends State<SensorViewPage> {
         //     socketDto.getSocketMessage[0].getSensorValue!;
       });
       if (_socketSensorList != null && _sensorList != null) {
-        print("=====================START===============================");
+        // print("=====================START===============================");
         List<dynamic>? dbSensorIds =
             _sensorList?.map((dbSensor) => dbSensor.getSensorId).toList();
 
@@ -131,9 +132,9 @@ class SensorViewPageState extends State<SensorViewPage> {
                 nonExistentSensorIds!.contains(socketSensor.getSensorId))
             .toList();
         if (nonExistentSensorIds!.isNotEmpty) {
-          print(
-              "Sensor IDs in mqttList but not in dbList: $nonExistentSensorIds");
-          print("Maps for non-existent sensors: $nonExistentSensors");
+          // print(
+          //     "Sensor IDs in mqttList but not in dbList: $nonExistentSensorIds");
+          // print("Maps for non-existent sensors: $nonExistentSensors");
           nonExistentSensors?.forEach((detectedSensor) {
             _showEditOrAddDialog(detectedSensor.getSensorId,
                 detectedSensor.getSensorName, detectedSensor.getType,
@@ -145,10 +146,10 @@ class SensorViewPageState extends State<SensorViewPage> {
           print("No new Sensors Found!");
         }
 
-        print("=====================END===============================");
+        // print("=====================END===============================");
       }
-      print(
-          "Received Sensor Valueeeeeee: ${_socketSensorList![0].getSensorValue}");
+      // print(
+      //     "Received Sensor Valueeeeeee: ${_socketSensorList![0].getSensorValue}");
     });
   }
 
@@ -183,13 +184,13 @@ class SensorViewPageState extends State<SensorViewPage> {
   }
 
   int? getMqttSensorData(String sensorId) {
-    print("this sensorId:$sensorId");
+    log("this sensorId:$sensorId");
     if (_socketSensorList != null) {
       Sensor? relevantSensor = _socketSensorList!
           .where((element) => element.getSensorId == sensorId)
           .firstOrNull;
 
-      print("getMqttSensorData: ${relevantSensor?.getSensorValue}");
+      log("getMqttSensorData: ${relevantSensor?.getSensorValue}");
       return relevantSensor?.getSensorValue?.round() ?? 0;
     } else {
       return 1;
