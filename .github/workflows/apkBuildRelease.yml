@@ -6,10 +6,16 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   flutterBuildRelease:
     runs-on: ubuntu-latest
+    env:
+      GIT_ORG: Ramiiyan
+      REPOSITORY: agri_io_app
+      TARGET_PATH: build/app/outputs/flutter-apk
+      TARGET_FILE_TYPE: apk
     steps:
       # Checkout to current
       - name: Checkout
@@ -41,5 +47,46 @@ jobs:
       # - run: flutter analyze .
 
       # Build Android APK release file
-      - name: Build
+      - name: Build Android APK
         run: flutter build apk --split-per-abi
+      
+      - name: Release GitHub Artifacts
+        id: release_github_artifacts
+        run: |
+          echo "${{secrets.GIT_ACTION_PAT}}" | gh auth login --with-token # GitHub cli login with PAT
+          current_tag_name=$(gh release view --repo ${{ env.GIT_ORG }}/${{ env.REPOSITORY }} --json tagName --jq '.tagName' || true)
+          
+          if [ -z $current_tag_name ]; then
+            echo "No Release found."
+            gh release create v0.1 --title "${{ env.REPOSITORY }} - v0.1" --notes "Release notes for version v0.1"
+            echo "New Github Release Published. Tag Version:v0.1"
+            updated_tag=0.1
+          else
+            echo "current latest tag name: $current_tag_name"
+            output=$(echo $current_tag_name | grep -oP '\d+\.\d+')
+            echo "OUTPUT: $output"
+            tag_version=$(echo $current_tag_name | grep -oP '\d+\.\d+')
+            IFS="." read -ra ver_compo <<< "$tag_version"
+
+            # Extract major and minor versions
+            major_v="${ver_compo[0]}" 
+            minor_v="${ver_compo[1]}"
+          
+            # Increase the minor version by 1
+            minor_v=$(($minor_v + 1))
+          
+            echo $minor_v
+            # New GitHub Release tag
+            new_github_tag_name="$major_v.$minor_v"
+            echo "Release Tag: $new_github_tag_name"
+          
+            # Release the Pack
+            gh release create $new_github_tag_name --title "${{ env.REPOSITORY }} - $new_github_tag_name" --notes "Release notes for version $new_github_tag_name"
+          
+            updated_tag=$new_github_tag_name
+          fi
+          echo "updated_tag: $updated_tag"
+          gh release upload $updated_tag  ${{ env.TARGET_PATH }}/*.${{ env.TARGET_FILE_TYPE }} --repo ${{ env.GIT_ORG }}/${{ env.REPOSITORY }}
+          echo "Artifacts uploaded to GitHub release."
+
+          echo "NEW_TAG_VERSION=$updated_tag"
