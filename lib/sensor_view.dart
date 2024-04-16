@@ -13,14 +13,16 @@ import 'package:socket_io_client/socket_io_client.dart';
 import 'Services/StreamStocket.dart';
 import 'routes/Routes.dart';
 import 'Cards/internalClass.dart';
+import 'my_global.dart' as global;
 
 class SensorViewPage extends StatefulWidget {
-  SensorViewPage({super.key});
+  const SensorViewPage({super.key});
   @override
   SensorViewPageState createState() => SensorViewPageState();
 }
 
 class SensorViewPageState extends State<SensorViewPage> {
+  late final String myHostname = global.hostname;
   final HttpService httpService = HttpService();
   late IO.Socket socket;
   StreamSocket streamSocket = StreamSocket();
@@ -88,7 +90,7 @@ class SensorViewPageState extends State<SensorViewPage> {
 
   initSocket() {
     socket = IO.io(
-        'http://localhost:9092/?room=a',
+        'http://$myHostname:9092/?room=a',
         OptionBuilder()
             .setTransports(['websocket']) // for Flutter or Dart VM
             .disableAutoConnect() // disable auto-connection

@@ -1,6 +1,8 @@
+import 'package:agri_io_app/sensor_view.dart';
 import 'package:flutter/material.dart';
 import '../routes/Routes.dart';
 import 'Cards/internalClass.dart';
+import 'my_global.dart' as global;
 
 class LoginPage extends StatefulWidget {
   LoginPage({super.key});
@@ -68,6 +70,7 @@ class LoginPageState extends State<LoginPage> {
                                         onChanged: (value) {
                                           setState(() {
                                             _username = value.toString();
+                                            global.hostname = _username;
                                           });
                                         },
                                         validator: (value) {
@@ -90,7 +93,7 @@ class LoginPageState extends State<LoginPage> {
                                         obscureText: _passwordVisible,
                                         onChanged: (value) {
                                           setState(() {
-                                            _username = value.toString();
+                                            _password = value.toString();
                                           });
                                         },
                                         validator: (value) {
@@ -143,6 +146,11 @@ class LoginPageState extends State<LoginPage> {
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.of(context).pushNamed(Routes.sensorView);
+                      // Navigator.push(
+                      //     context,
+                      //     MaterialPageRoute(
+                      //         builder: (context) =>
+                      //             SensorViewPage(hostname: _username)));
                     },
                     child: const Text(
                       "LOGIN",

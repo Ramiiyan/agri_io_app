@@ -2,9 +2,14 @@ import 'dart:convert';
 
 import 'package:agri_io_app/Models/sensor_model.dart';
 import 'package:http/http.dart' as http;
+import '../my_global.dart' as global;
 
 class HttpService {
-  final String baseURL = "http://localhost:8080";
+  String _hostname = global.hostname;
+
+
+
+  late String baseURL = "http://$_hostname:8080";
   late http.Response httpResponse;
 
   Future<List<Sensor>> fetchSensors() async {
