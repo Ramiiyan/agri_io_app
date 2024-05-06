@@ -34,6 +34,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           flutter-version: 3.19.6
+          cache: true
 
       # Run flutter commands
       - name: Run flutter pub get
