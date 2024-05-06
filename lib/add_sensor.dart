@@ -21,10 +21,18 @@ class AddSensorState extends State<AddSensor> {
   final HttpService httpService = HttpService();
   late String _newSensorName, _newSensorType;
 
+  // List of items in our dropdown menu
+  final List<int> sensorPins = [32, 33, 34, 35, 36, 39];
+  late int selectedSensorPin = 32;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.keyboard_arrow_left),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         title: const Text('Add New Sensor'),
       ),
       body: Container(
@@ -120,6 +128,55 @@ class AddSensorState extends State<AddSensor> {
                                 ],
                               ),
                             ),
+                            Container(
+                              margin: const EdgeInsets.symmetric(vertical: 10),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  const Text(
+                                    "Sensor Pin",
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15),
+                                  ),
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                  Center(
+                                      child: Container(
+                                    alignment: Alignment.topLeft,
+                                    // width: MediaQuery.of(context).size.width,
+                                    child: DropdownMenu<int>(
+                                      // Initial Value
+                                      initialSelection: selectedSensorPin,
+                                      expandedInsets: EdgeInsets.zero,
+                                      // width: MediaQuery.of(context).size.width,
+                                      // Down Arrow Icon
+                                      trailingIcon:
+                                          const Icon(Icons.keyboard_arrow_down),
+                                      menuStyle: const MenuStyle(),
+                                      // enableFilter: true,
+                                      // Array list of items
+                                      dropdownMenuEntries: sensorPins
+                                          .map<DropdownMenuEntry<int>>(
+                                              (int pin) {
+                                        return DropdownMenuEntry<int>(
+                                          value: pin,
+                                          label: pin.toString(),
+                                        );
+                                      }).toList(),
+                                      // After selecting the desired option,it will
+                                      // change button value to selected value
+                                      onSelected: (int? newValue) {
+                                        setState(() {
+                                          selectedSensorPin = newValue!;
+                                        });
+                                      },
+                                    ),
+                                  ))
+                                ],
+                              ),
+                            ),
                           ])),
                     ]),
               ),
@@ -137,8 +194,8 @@ class AddSensorState extends State<AddSensor> {
       ScaffoldMessenger.of(context).showSnackBar(AppWidgets(context)
           .notifySnackBar("Data Processing..", color: Colors.black));
 
-      final res = await httpService
-          .createSensor(Sensor.nonSensorId(_newSensorName, _newSensorType));
+      final res = await httpService.createSensor(Sensor.nonSensorId(
+          _newSensorName, _newSensorType, selectedSensorPin));
 
       final Map<String, dynamic> jsonResponse = jsonDecode(res);
 

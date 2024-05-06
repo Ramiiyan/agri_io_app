@@ -7,9 +7,7 @@ import '../my_global.dart' as global;
 class HttpService {
   String _hostname = global.hostname;
 
-
-
-  late String baseURL = "http://$_hostname:8080";
+  late String baseURL = "http://$_hostname";
   late http.Response httpResponse;
 
   Future<List<Sensor>> fetchSensors() async {

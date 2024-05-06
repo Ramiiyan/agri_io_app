@@ -30,6 +30,7 @@ class SensorViewPageState extends State<SensorViewPage> {
   List<Sensor>? _sensorList, _socketSensorList;
   final _editFormKey = GlobalKey<FormState>();
   late String _editSensorName, _editSensorType, _addSensorId;
+  late int _editSensorPin;
   final sampleData = [
     {
       "sensorId": "da0b44f86a73",
@@ -38,6 +39,7 @@ class SensorViewPageState extends State<SensorViewPage> {
       "urn": "fc1d82c0-c4cd-42fe-b8f5-da0b44f86a73",
       "state": false,
       "sensorType": "Soil Moisture",
+      "sensorPin": 34,
       "sensorValue": 88,
     },
     {
@@ -47,6 +49,7 @@ class SensorViewPageState extends State<SensorViewPage> {
       "urn": "fc1d82c0-c4cd-42fe-b8f5-da0b44f86a73",
       "state": false,
       "sensorType": "Soil Moisture",
+      "sensorPin": 35,
       "sensorValue": 77
     },
     {
@@ -56,6 +59,7 @@ class SensorViewPageState extends State<SensorViewPage> {
       "urn": "fc1d82c0-c4cd-42fe-b8f5-da0b44f86a73",
       "state": false,
       "sensorType": "Soil Moisture",
+      "sensorPin": 36,
       "sensorValue": 47
     },
     {
@@ -65,6 +69,7 @@ class SensorViewPageState extends State<SensorViewPage> {
       "urn": "fc1d82c0-c4cd-42fe-b8f5-dafe44f86a73",
       "state": false,
       "sensorType": "Soil Moisture",
+      "sensorPin": 39,
       "sensorValue": 100
     }
   ];
@@ -138,8 +143,11 @@ class SensorViewPageState extends State<SensorViewPage> {
           //     "Sensor IDs in mqttList but not in dbList: $nonExistentSensorIds");
           // print("Maps for non-existent sensors: $nonExistentSensors");
           nonExistentSensors?.forEach((detectedSensor) {
-            _showEditOrAddDialog(detectedSensor.getSensorId,
-                detectedSensor.getSensorName, detectedSensor.getType,
+            _showEditOrAddDialog(
+                detectedSensor.getSensorId,
+                detectedSensor.getSensorName,
+                detectedSensor.getType,
+                detectedSensor.getSensorPin,
                 addAsNewSensor: true);
             //_showNewSensorDialog();
           });
@@ -219,6 +227,7 @@ class SensorViewPageState extends State<SensorViewPage> {
                       sensorId: sensors[index].getSensorId,
                       sensorName: sensors[index].getSensorName,
                       sensorType: sensors[index].getType,
+                      sensorPin: sensors[index].getSensorPin,
                       sensorValue:
                           getMqttSensorData(sensors[index].getSensorId));
                 }));
@@ -280,6 +289,7 @@ class SensorViewPageState extends State<SensorViewPage> {
       required String sensorId,
       required String sensorName,
       required String sensorType,
+      int? sensorPin,
       int? sensorValue}) {
     return Card(
         child: Column(
@@ -302,6 +312,10 @@ class SensorViewPageState extends State<SensorViewPage> {
                   height: 10,
                 ),
                 Text(sensorType),
+                Container(
+                  height: 10,
+                ),
+                Text("Pin: $sensorPin"),
               ],
             ),
             Column(
@@ -316,7 +330,7 @@ class SensorViewPageState extends State<SensorViewPage> {
                       width: 30,
                       child: IconButton(
                           onPressed: () => _showEditOrAddDialog(
-                              sensorId, sensorName, sensorType),
+                              sensorId, sensorName, sensorType, sensorPin),
                           icon: const Icon(
                             Icons.edit,
                           )),
@@ -422,11 +436,12 @@ class SensorViewPageState extends State<SensorViewPage> {
   }
 
   Future<void> _showEditOrAddDialog(
-      String sensorId, String sensorName, String sensorType,
+      String sensorId, String sensorName, String sensorType, int? sensorPin,
       {bool addAsNewSensor = false}) async {
     _addSensorId = sensorId;
     _editSensorName = sensorName;
     _editSensorType = sensorType;
+    _editSensorPin = sensorPin ?? 0;
     return showDialog<void>(
       context: context,
       barrierDismissible: false, // user must tap button!
@@ -559,6 +574,41 @@ class SensorViewPageState extends State<SensorViewPage> {
                           ],
                         ),
                       ),
+                      Container(
+                        margin: const EdgeInsets.symmetric(vertical: 10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            const Text(
+                              "Sensor Pin",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 15),
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            TextFormField(
+                                initialValue: sensorPin.toString(),
+                                onChanged: (value) {
+                                  setState(() {
+                                    _editSensorPin = int.parse(value);
+                                  });
+                                },
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter some text';
+                                  }
+                                  return null;
+                                },
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
+                                decoration: const InputDecoration(
+                                    border: InputBorder.none,
+                                    fillColor: Color(0xfff3f3f4),
+                                    filled: true)),
+                          ],
+                        ),
+                      ),
                     ])),
               ],
             ),
@@ -573,7 +623,8 @@ class SensorViewPageState extends State<SensorViewPage> {
             TextButton(
               child: Text(addAsNewSensor ? 'Add' : 'Modify'),
               onPressed: () async {
-                _editOrAddSensor(sensorId, _editSensorName, _editSensorType,
+                _editOrAddSensor(
+                    sensorId, _editSensorName, _editSensorType, _editSensorPin,
                     addAsNewSensor: addAsNewSensor);
               },
             ),
@@ -602,7 +653,8 @@ class SensorViewPageState extends State<SensorViewPage> {
     }
   }
 
-  void _editOrAddSensor(String sensorId, String sensorName, String sensorType,
+  void _editOrAddSensor(
+      String sensorId, String sensorName, String sensorType, int? sensorPin,
       {bool addAsNewSensor = false}) async {
     if (_editFormKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(AppWidgets(context)
@@ -611,10 +663,10 @@ class SensorViewPageState extends State<SensorViewPage> {
       if (addAsNewSensor) {
         print("Added the Sensor as New Sensor to DB...");
         res = await httpService.createSensorWithId(
-            Sensor.nonSensorValue(sensorId, sensorName, sensorType));
+            Sensor.nonSensorValue(sensorId, sensorName, sensorType, sensorPin));
       } else {
         res = await httpService.editSensor(
-            Sensor.nonSensorValue(sensorId, sensorName, sensorType));
+            Sensor.nonSensorValue(sensorId, sensorName, sensorType, sensorPin));
       }
       final Map<String, dynamic> jsonResponse = jsonDecode(res);
 

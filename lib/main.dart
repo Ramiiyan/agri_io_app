@@ -50,6 +50,8 @@ class MyApp extends StatelessWidget {
 
 ThemeData agrioAppTheme(BuildContext context, bool isDarkTheme) {
   return ThemeData(
+    useMaterial3: false,
+    // colorSchemeSeed: Colors.green,
     primarySwatch: Colors.green,
     primaryColor: Colors.green,
     scaffoldBackgroundColor: isDarkTheme ? Colors.black : Colors.white,
