@@ -24,7 +24,7 @@ on:
       image_name:
         required: false
         type: string
-        default: rovo
+        default: agri.io
     secrets:
       docker_password:
         required: true
