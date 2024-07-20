@@ -1,0 +1,99 @@
+name: "Build & Release Flutter APP"
+
+# Define when to trigger the workflow (on each push to the main branch)
+## Whatever push changes occurs to main branch, this workflow will trigger.
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  WebAppBuildRelease:
+    runs-on: ubuntu-latest
+    env:
+      GIT_ORG: Ramiiyan
+      REPOSITORY: agri_io_app
+      WEB_BUNDLE_PATH : build/web
+      DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      IMAGE_NAME: agri.io
+    steps:
+      # Checkout to current
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Setup Flutter in the VM
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.19.6
+          cache: true
+      
+      # Download Docker
+      - name: 'Set up Docker'
+        run: |
+          sudo apt-get update
+          sudo apt-get install curl
+          
+          curl -fsSL https://get.docker.com/ | sh
+          sudo usermod -aG docker runner
+
+      # Run flutter commands to install dependencies
+      - name: Run flutter pub get
+        run: flutter pub get
+      - name: 📦 Install dependencies
+        run: flutter pub get
+
+      # Build Web App release file
+      - name: Build Web App
+        run: flutter build web
+
+      # # Archive Web App files from build/web
+      # - name: Archive Web App
+      #   run: zip -r agrio-web-app.zip build ${{ env.WEB_BUNDLE_PATH }}
+
+      # Login Docker
+      - name: Login to Docker
+        run: |
+          docker login -u ${{ env.DOCKER_USERNAME }} -p ${{ env.DOCKER_PASSWORD }}
+
+      # Get the Git Release version for Docker Image tag version
+      - name: Get Git Release version
+        id: get_git_release_version
+        run: |
+          echo "${{secrets.GIT_ACTION_PAT}}" | gh auth login --with-token # GitHub cli login with PAT
+          
+          latest_tag_name=$(gh release view --repo ${{ env.GIT_ORG }}/${{ env.REPOSITORY }} --json tagName --jq '.tagName' || true)
+
+          echo "ARTIFACT_VERSION=$latest_tag_name" >> $GITHUB_OUTPUT
+      
+      # Build & Upload Docker Image
+      - name: Build & Push Image
+        env:
+          ARTIFACT_VERSION: ${{ steps.get_git_release_version.outputs.ARTIFACT_VERSION }}
+
+        run: |
+          
+          docker build -t ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.ARTIFACT_VERSION }} .
+          echo "docker image build successfully."
+          
+          docker push ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.ARTIFACT_VERSION }}
+          echo "docker image pushed successfully.: ${{ env.ARTIFACT_VERSION }}"
+          
+          docker tag ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.ARTIFACT_VERSION }} ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest
+          docker push ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest
+          echo "docker image pushed as Latest successfully."
+  # oci_docker_cd:
+  #   needs: [WebAppBuildRelease]
+  #   uses: ./.github/workflows/webApp_CD.yml
+  #   with:
+  #     git_org: Ramiiyan
+  #     repository: agri_io_app
+  #     docker_username: ${{ vars.DOCKER_USERNAME }}
+  #     oci_docker_host: ${{ vars.OCI_DOCKER_HOST }}
+  #   secrets: inherit # ${{ secrets.DOCKER_PASSWORD }}
+
+    
+      
+      

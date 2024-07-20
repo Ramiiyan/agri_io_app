@@ -1,0 +1,121 @@
+name: "OCI Docker Deployment"
+
+# Define when to trigger the workflow (on each push to the main branch)
+## Whatever push changes occurs to main branch, this workflow will trigger.
+on:
+  workflow_call:
+    inputs:
+      git_org:
+        required: true
+        type: string
+      repository:
+        required: true
+        type: string
+      docker_username:
+        required: true
+        type: string
+      oci_docker_host:
+        required: true
+        type: string
+      docker_context_name:
+        required: false
+        type: string
+        default: oracle-vm-docker
+      image_name:
+        required: false
+        type: string
+        default: rovo
+    secrets:
+      docker_password:
+        required: true
+
+#  workflow_dispatch:
+
+jobs:
+  release_Docker:
+    # Set the environment for this job (place where these workflow will run below steps and cmds)
+    runs-on: ubuntu-latest
+    env:
+      GIT_ORG: ${{ inputs.git_org }}
+      REPOSITORY: ${{ inputs.repository }}
+      DOCKER_USERNAME: ${{ inputs.docker_username }}
+      DOCKER_PASSWORD: ${{ secrets.docker_password }}
+      OCI_DOCKER_HOST: ${{ inputs.oci_docker_host }}
+      DOCKER_CONTEXT_NAME: ${{ inputs.docker_context_name }}
+      IMAGE_NAME: ${{ inputs.image_name }}
+      DOCKER_IMAGE_FULL_NAME: ${{ inputs.docker_username }}/${{ inputs.image_name }}
+
+    steps:
+      # Checkout to current
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Download Docker
+      - name: 'Set up Docker'
+        run: |
+          sudo apt-get update
+          sudo apt-get install curl
+          
+          curl -fsSL https://get.docker.com/ | sh
+          sudo usermod -aG docker runner
+
+      # Login Docker
+      - name: 'Login to Docker'
+        run: |
+          docker login -u ${{ env.DOCKER_USERNAME }} -p ${{ env.DOCKER_PASSWORD }}
+
+      - name: Create ssh directory
+        run: mkdir --parents $HOME/.ssh
+
+      - name: Start SSH Agent
+        run: |
+          if [ -z "$SSH_AGENT_PID" ]; then
+            eval $(ssh-agent)
+            echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
+            echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> $GITHUB_ENV
+          fi
+
+      - name: Configure SSH client private key
+        run: |
+          if [ -n "${{ secrets.OCI_SSH_KEY }}" ]; then echo "${{ secrets.OCI_SSH_KEY }}" | ssh-add - ; fi
+          echo "CHECKING IF KEY WAS ADDED" && ssh-add -l # Checking key was added correctly
+          echo "StrictHostKeyChecking no" | sudo tee -a /etc/ssh/ssh_config #Setting StrictHostKeyChecking to false
+
+       # Create Docker context
+      - name: 'Create OCI Docker context'
+        run: |
+          docker context create ${{ env.DOCKER_CONTEXT_NAME }} --docker "host=${{ env.OCI_DOCKER_HOST }}"
+          docker context use ${{ env.DOCKER_CONTEXT_NAME }}
+          docker context ls
+          docker ps
+          sleep 5s
+          docker images
+
+      # Stop & Remove Docker container
+      - name: 'stop & remove existing container'
+        run: |
+          # Stop and remove the container if it's running
+          docker ps | grep "${{ env.DOCKER_IMAGE_FULL_NAME }}" | awk '{print $1}' | xargs -r docker stop
+          docker ps -a | grep "${{ env.DOCKER_IMAGE_FULL_NAME }}" | awk '{print $1}' | xargs -r docker rm
+
+      # Remove the image if it exists
+      - name: "Remove the image if it exists"
+        run: |
+          docker images | grep "${{ env.DOCKER_IMAGE_FULL_NAME }}" | awk '{print $3}' | xargs -r docker rmi
+
+      # Pull Latest Image from the Docker repository
+      - name: 'Pull Docker image'
+        run: |
+          docker pull ${{ env.DOCKER_IMAGE_FULL_NAME }}
+          docker images
+
+      # Run the latest Docker image
+      - name: 'Run the Container'
+        run: |
+          docker run -d -p 80:9000 ${{ env.DOCKER_IMAGE_FULL_NAME }}
+          docker ps
+          sleep 2m # Waits 2 minutes. until the server up and run
+      # Run CURL command to check the application health
+      - name: 'Application health check'
+        run: |
+          curl -k http://rovo.zapto.org/healthcheck
