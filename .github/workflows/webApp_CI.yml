@@ -1,4 +1,4 @@
-name: "Build & Release Flutter APP"
+name: "Build & Release Flutter Web App"
 
 # Define when to trigger the workflow (on each push to the main branch)
 ## Whatever push changes occurs to main branch, this workflow will trigger.
@@ -84,15 +84,15 @@ jobs:
           docker tag ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.ARTIFACT_VERSION }} ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest
           docker push ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest
           echo "docker image pushed as Latest successfully."
-  # oci_docker_cd:
-  #   needs: [WebAppBuildRelease]
-  #   uses: ./.github/workflows/webApp_CD.yml
-  #   with:
-  #     git_org: Ramiiyan
-  #     repository: agri_io_app
-  #     docker_username: ${{ vars.DOCKER_USERNAME }}
-  #     oci_docker_host: ${{ vars.OCI_DOCKER_HOST }}
-  #   secrets: inherit # ${{ secrets.DOCKER_PASSWORD }}
+  oci_docker_cd:
+    needs: [WebAppBuildRelease]
+    uses: ./.github/workflows/webApp_CD.yml
+    with:
+      git_org: Ramiiyan
+      repository: agri_io_app
+      docker_username: ${{ vars.DOCKER_USERNAME }}
+      oci_docker_host: ${{ vars.OCI_DOCKER_HOST }}
+    secrets: inherit # ${{ secrets.DOCKER_PASSWORD }}
 
     
       

@@ -1,4 +1,4 @@
-name: "Build & Release Flutter APP"
+name: "Build & Release Flutter Android App"
 
 # Define when to trigger the workflow (on each push to the main branch)
 ## Whatever push changes occurs to main branch, this workflow will trigger.
